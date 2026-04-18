@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>RETRO ARCADE</title>
+  <link rel="stylesheet" href="style.css?v=5" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- CRT overlay -->
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+
+  <!-- Stars background -->
+  <canvas id="stars"></canvas>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div class="logo-wrap">
+        <div class="pixel-logo">
+          <span class="logo-r">R</span><span class="logo-e">E</span><span class="logo-t">T</span><span class="logo-r2">R</span><span class="logo-o">O</span>
+        </div>
+        <div class="logo-sub">◄ ARCADE ►</div>
+      </div>
+      <div class="blink-text">INSERT COIN</div>
+    </header>
+
+    <!-- Player card -->
+    <div class="player-card" id="playerCard">
+      <div class="card-title">▶ PLAYER DETECTED</div>
+      <div class="card-row">
+        <span class="card-label">IP:</span>
+        <span id="playerFlag" style="margin-right:2px;font-size:1.2em;line-height:1"></span>
+        <span class="card-value" id="playerIP">LOADING...</span>
+      </div>
+      <div class="card-row">
+        <span class="card-label">GEO:</span>
+        <span id="playerFlagGeo" style="margin-right:2px;font-size:1.2em;line-height:1"></span>
+        <span class="card-value" id="playerGeo">—</span>
+      </div>
+      <div class="card-row">
+        <span class="card-label">ISP:</span>
+        <span class="card-value" id="playerISP">—</span>
+      </div>
+      <div class="card-row">
+        <span class="card-label">STATUS:</span>
+        <span class="card-value green" id="playerStatus">CONNECTED</span>
+      </div>
+    </div>
+
+    <!-- Games grid -->
+    <section class="section-title">◄ SELECT YOUR GAME ►</section>
+    <div class="games-grid">
+
+      <div class="game-card" onclick="launchGame('snake')">
+        <div class="game-icon">🐍</div>
+        <div class="game-name">SNAKE</div>
+        <div class="game-meta">
+          <span class="difficulty green">●●●○○</span>
+          <span class="hi-score">HI: <span id="hi-snake">0</span></span>
+        </div>
+        <div class="game-btn">PLAY</div>
+      </div>
+
+      <div class="game-card" onclick="launchGame('pong')">
+        <div class="game-icon">🏓</div>
+        <div class="game-name">PONG</div>
+        <div class="game-meta">
+          <span class="difficulty yellow">●●○○○</span>
+          <span class="hi-score">HI: <span id="hi-pong">0</span></span>
+        </div>
+        <div class="game-btn">PLAY</div>
+      </div>
+
+      <div class="game-card" onclick="launchGame('breakout')">
+        <div class="game-icon">🧱</div>
+        <div class="game-name">BREAKOUT</div>
+        <div class="game-meta">
+          <span class="difficulty red">●●●●○</span>
+          <span class="hi-score">HI: <span id="hi-breakout">0</span></span>
+        </div>
+        <div class="game-btn">PLAY</div>
+      </div>
+
+      <div class="game-card" onclick="launchGame('invaders')">
+        <div class="game-icon">👾</div>
+        <div class="game-name">INVADERS</div>
+        <div class="game-meta">
+          <span class="difficulty red">●●●●●</span>
+          <span class="hi-score">HI: <span id="hi-invaders">0</span></span>
+        </div>
+        <div class="game-btn">PLAY</div>
+      </div>
+
+    </div>
+
+    <!-- Leaderboard -->
+    <section class="section-title">◄ HALL OF FAME ►</section>
+    <div class="leaderboard">
+      <div class="lb-header">
+        <span>#</span><span>PLAYER</span><span>SCORE</span><span>GAME</span>
+      </div>
+      <div class="lb-row gold"><span>01</span><span>ACE</span><span>99999</span><span>INVADERS</span></div>
+      <div class="lb-row silver"><span>02</span><span>REX</span><span>87430</span><span>SNAKE</span></div>
+      <div class="lb-row bronze"><span>03</span><span>ZAP</span><span>76210</span><span>BREAKOUT</span></div>
+      <div class="lb-row"><span>04</span><span>NOX</span><span>65000</span><span>PONG</span></div>
+      <div class="lb-row you" id="yourRow" style="display:none">
+        <span>??</span><span id="yourName">YOU</span><span id="yourScore">0</span><span id="yourGame">-</span>
+      </div>
+    </div>
+
+    <!-- Game modal -->
+    <div id="gameModal" class="modal hidden">
+      <div class="modal-inner">
+        <div class="modal-header">
+          <span id="modalTitle">GAME</span>
+          <button class="close-btn" onclick="closeGame()">✕ EXIT</button>
+        </div>
+        <canvas id="gameCanvas" width="480" height="360"></canvas>
+        <div class="modal-footer">
+          <span>SCORE: <b id="modalScore">0</b></span>
+          <span id="modalControls"></span>
+        </div>
+
+        <!-- Touch controls (mobile) -->
+        <div id="touchControls" class="touch-controls hidden">
+          <div class="tc-dpad">
+            <div class="tc-row">
+              <button class="tc-btn" id="tcUp">▲</button>
+            </div>
+            <div class="tc-row tc-mid">
+              <button class="tc-btn" id="tcLeft">◄</button>
+              <button class="tc-btn" id="tcDown">▼</button>
+              <button class="tc-btn" id="tcRight">►</button>
+            </div>
+          </div>
+          <button class="tc-btn tc-fire hidden" id="tcFire">● FIRE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div>© 2026 RETRO ARCADE — ALL RIGHTS RESERVED</div>
+      <div class="footer-dots">
+        <span>●</span><span>●</span><span>●</span><span>●</span><span>●</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js?v=4"></script>
+</body>
+</html>
