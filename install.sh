@@ -98,14 +98,8 @@ rm -rf "$TMP"
 
 # ── Определяем домен / IP ──────────────────────
 SERVER_IP=$(hostname -I | awk '{print $1}')
-# Пробуем получить домен через обратный DNS
-SERVER_HOST=$(host "$SERVER_IP" 2>/dev/null | awk '/domain name pointer/{print $NF}' | sed 's/\.$//')
-# Если домен не нашёлся или совпадает с IP — используем hostname -f
-if [ -z "$SERVER_HOST" ] || [ "$SERVER_HOST" = "$SERVER_IP" ]; then
-  SERVER_HOST=$(hostname -f 2>/dev/null)
-fi
-# Финальный fallback на IP
-DISPLAY_URL="${SERVER_HOST:-$SERVER_IP}"
+# Домен можно передать аргументом: bash install.sh mydomain.com
+DISPLAY_URL="${1:-$SERVER_IP}"
 
 # ── Финал ──────────────────────────────────────
 echo -e "${D}  ══════════════════════════════════════════════${NC}"
