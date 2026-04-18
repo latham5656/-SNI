@@ -13,6 +13,8 @@ if ! command -v git &>/dev/null; then
   apt-get update -q && apt-get install -y -q git
 fi
 
+git config --global --add safe.directory "$TARGET"
+
 echo "==> Очищаем $TARGET..."
 rm -rf "$TARGET"
 mkdir -p "$TARGET"
