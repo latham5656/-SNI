@@ -85,18 +85,6 @@ server {
 ├── style.css       # Стили (CRT, адаптив, touch-controls)
 ├── app.js          # Логика: игры, IP-детект, touch D-pad
 ├── geo.php         # Серверный прокси → ipinfo.io
-└── install.sh      # Скрипт деплоя на VPS
-```
-
----
-
-## 🔄 Обновление сайта
-
-После пуша изменений в репозиторий — запусти ту же команду на VPS:
-
-```bash
-curl -sL https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/install.sh | bash
-```
 
 ---
 
