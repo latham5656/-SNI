@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-REPO="https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/install.sh"
+REPO="https://github.com/latham5656/-SNI.git"
 TARGET="/var/www/html"
+TMP="/tmp/retro-arcade-deploy"
 
 echo "==> Retro Arcade installer"
 
@@ -12,13 +13,17 @@ if ! command -v git &>/dev/null; then
   apt-get update -q && apt-get install -y -q git
 fi
 
-# Клонируем или обновляем
 if [ -d "$TARGET/.git" ]; then
+  # Уже клонировано — просто обновляем
   echo "==> Обновляем существующую копию..."
   git -C "$TARGET" pull
 else
-  echo "==> Клонируем репозиторий в $TARGET..."
-  git clone "$REPO" "$TARGET"
+  # Клонируем во временную папку, затем копируем файлы
+  echo "==> Скачиваем файлы..."
+  rm -rf "$TMP"
+  git clone "$REPO" "$TMP"
+  cp -r "$TMP"/. "$TARGET/"
+  rm -rf "$TMP"
 fi
 
 # Права доступа
@@ -26,4 +31,4 @@ chown -R www-data:www-data "$TARGET" 2>/dev/null || true
 chmod -R 755 "$TARGET"
 
 echo ""
-echo "✓ Готово! Сайт доступен по адресу вашего VPS."
+echo "✓ Готово! Сайт обновлён."
