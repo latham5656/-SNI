@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO="https://github.com/ВАШ_ЛОГИН/ВАШ_РЕПО.git"
+REPO="https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/install.sh"
 TARGET="/var/www/html"
 
 echo "==> Retro Arcade installer"
