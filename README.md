@@ -86,6 +86,8 @@ server {
 ├── app.js          # Логика: игры, IP-детект, touch D-pad
 ├── geo.php         # Серверный прокси → ipinfo.io
 
+```
+
 ---
 
 ## 📜 Лицензия
