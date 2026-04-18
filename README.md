@@ -31,20 +31,6 @@
 
 ---
 
-## 🖥️ Скриншоты
-
-```
-╔══════════════════════════════╗
-║  R E T R O   A R C A D E    ║
-║       ◄ ARCADE ►             ║
-║       INSERT COIN            ║
-╠══════════════════════════════╣
-║ IP:  🇷🇺  1.2.3.4            ║
-║ GEO: 🇷🇺  MOSCOW, RU         ║
-║ ISP: ROSTELECOM              ║
-║ STATUS: CONNECTED            ║
-╚══════════════════════════════╝
-```
 
 ---
 
@@ -112,10 +98,8 @@ server {
 curl -sL https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/install.sh | bash
 ```
 
-Скрипт определит, что репозиторий уже склонирован, и просто сделает `git pull`.
-
 ---
 
 ## 📜 Лицензия
 
-MIT — делай что хочешь 🙂
+MIT

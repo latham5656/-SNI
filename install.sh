@@ -13,14 +13,20 @@ if ! command -v git &>/dev/null; then
   apt-get update -q && apt-get install -y -q git
 fi
 
-git config --global --add safe.directory "$TARGET"
+# Клонируем в /tmp
+echo "==> Скачиваем файлы..."
+rm -rf "$TMP"
+git clone "$REPO" "$TMP"
 
-echo "==> Очищаем $TARGET..."
-rm -rf "$TARGET"
-mkdir -p "$TARGET"
+# Копируем только нужные файлы
+echo "==> Копируем файлы в $TARGET..."
+cp "$TMP/index.html" "$TARGET/"
+cp "$TMP/style.css"  "$TARGET/"
+cp "$TMP/app.js"     "$TARGET/"
+cp "$TMP/geo.php"    "$TARGET/"
 
-echo "==> Клонируем репозиторий..."
-git clone "$REPO" "$TARGET"
+# Убираем временную папку
+rm -rf "$TMP"
 
 # Права доступа
 chown -R www-data:www-data "$TARGET" 2>/dev/null || true
