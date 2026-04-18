@@ -96,12 +96,24 @@ echo ""
 # ── Шаг 5: чистим temp ─────────────────────────
 rm -rf "$TMP"
 
+# ── Определяем домен / IP ──────────────────────
+SERVER_IP=$(hostname -I | awk '{print $1}')
+# Пробуем получить домен через обратный DNS
+SERVER_HOST=$(host "$SERVER_IP" 2>/dev/null | awk '/domain name pointer/{print $NF}' | sed 's/\.$//')
+# Если домен не нашёлся или совпадает с IP — используем hostname -f
+if [ -z "$SERVER_HOST" ] || [ "$SERVER_HOST" = "$SERVER_IP" ]; then
+  SERVER_HOST=$(hostname -f 2>/dev/null)
+fi
+# Финальный fallback на IP
+DISPLAY_URL="${SERVER_HOST:-$SERVER_IP}"
+
 # ── Финал ──────────────────────────────────────
 echo -e "${D}  ══════════════════════════════════════════════${NC}"
 echo ""
 echo -e "  ${G}★  Установка завершена успешно!${NC}"
 echo ""
-echo -e "  ${C}►${NC}  Сайт:     ${W}http://$(hostname -I | awk '{print $1}')${NC}"
+echo -e "  ${C}►${NC}  Сайт:       ${W}http://${DISPLAY_URL}${NC}"
+echo -e "  ${C}►${NC}  IP:         ${D}${SERVER_IP}${NC}"
 echo -e "  ${C}►${NC}  Директория: ${W}${TARGET}${NC}"
 echo ""
 echo -e "${D}  ══════════════════════════════════════════════${NC}"
