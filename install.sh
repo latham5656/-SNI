@@ -182,7 +182,7 @@ PYEOF
       spinner $! "Перезапускаем remnanode"
       ok "remnanode перезапущен (/opt/remnawave)"
     elif [ -d "/opt/remnanode" ]; then
-      (cd /opt/remnanode && docker compose pull remnanode &>/dev/null && docker compose down remnanode &>/dev/null && docker compose up &>/dev/null) &
+      (cd /opt/remnanode && docker compose pull remnanode &>/dev/null && docker compose down remnanode &>/dev/null && docker compose up -d &>/dev/null) &
       spinner $! "Перезапускаем remnanode"
       ok "remnanode перезапущен (/opt/remnanode)"
     else
