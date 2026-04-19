@@ -31,12 +31,7 @@
 
 ---
 
-
----
-
 ## ⚡ Быстрая установка на VPS
-
-Одной командой — клонирует репозиторий и настраивает права в `/var/www/html/`:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/install.sh | bash
@@ -44,35 +39,31 @@ curl -sL https://raw.githubusercontent.com/latham5656/-SNI/refs/heads/main/insta
 
 > ⚠️ Запускать от **root** или через **sudo**
 
+### Что делает скрипт автоматически:
+
+- 📦 Устанавливает **git** и **php-fpm** если не установлены
+- 📁 Копирует файлы сайта в `/var/www/html/`
+- ⚙️ Добавляет PHP-блок в **nginx.conf** (ищет `/opt/remnawave/` или `/opt/remnanode/`)
+- 🔄 Перезапускает **remnanode** через `docker compose`
+- 🔒 Выставляет корректные права доступа
+
 ---
 
 ## 📋 Требования
 
 - 🐧 Linux VPS (Ubuntu / Debian)
-- 🌐 Nginx или Apache
-- 🐘 PHP 7.4+ (для `geo.php` — определение IP/геолокации)
+- 🌐 Nginx (в docker compose — `/opt/remnawave/` или `/opt/remnanode/`)
+- 🐳 Docker + Docker Compose
 - 🔀 Git
 
-### Установка PHP + Nginx (если не установлены)
+---
+
+## 🔄 Обновление сайта
+
+После пуша изменений запусти на VPS (без кэша GitHub):
 
 ```bash
-apt update && apt install -y nginx php php-fpm
-```
-
-Для **Nginx** добавь в конфиг обработку PHP:
-
-```nginx
-server {
-    listen 80;
-    root /var/www/html;
-    index index.html;
-
-    location ~ \.php$ {
-        include fastcgi_params;
-        fastcgi_pass unix:/run/php/php-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
-}
+cd /tmp && rm -rf _test && git clone https://github.com/latham5656/-SNI.git _test && bash /tmp/_test/install.sh
 ```
 
 ---
@@ -85,7 +76,11 @@ server {
 ├── style.css       # Стили (CRT, адаптив, touch-controls)
 ├── app.js          # Логика: игры, IP-детект, touch D-pad
 ├── geo.php         # Серверный прокси → ipinfo.io
-
+└── install.sh      # Скрипт деплоя на VPS
 ```
 
 ---
+
+## 📜 Лицензия
+
+MIT
