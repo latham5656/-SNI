@@ -134,17 +134,47 @@ else
   if grep -q "fastcgi_pass" "$NGINX_CONF"; then
     ok "PHP уже настроен в ${NGINX_CONF}"
   else
-    # Вставляем перед последней закрывающей скобкой первого server-блока с root /var/www/html
-    # Добавляем в конец файла как отдельный фрагмент
-    printf '%s\n' "$PHP_BLOCK" >> "$NGINX_CONF"
-    ok "PHP-блок добавлен в ${NGINX_CONF}"
-
-    # Определяем сокет php-fpm (версия может отличаться)
+    # Определяем сокет php-fpm
     PHP_SOCK=$(ls /run/php/php*-fpm.sock 2>/dev/null | head -1)
-    if [ -n "$PHP_SOCK" ] && [ "$PHP_SOCK" != "/run/php/php-fpm.sock" ]; then
-      sed -i "s|unix:/run/php/php-fpm.sock|unix:${PHP_SOCK}|g" "$NGINX_CONF"
-      ok "Сокет: ${PHP_SOCK}"
-    fi
+    PHP_SOCK="${PHP_SOCK:-/run/php/php-fpm.sock}"
+    ok "Сокет php-fpm: ${PHP_SOCK}"
+
+    # Вставляем PHP-блок ВНУТРЬ server-блока с root /var/www/html
+    # (перед первой строкой "}" идущей после этой директивы)
+    python3 - "$NGINX_CONF" "$PHP_SOCK" << 'PYEOF'
+import sys
+
+conf_path = sys.argv[1]
+php_sock  = sys.argv[2]
+
+php_block = (
+    '    location ~ \\.php$ {\n'
+    '        include fastcgi_params;\n'
+    '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n'
+    f'        fastcgi_pass unix:{php_sock};\n'
+    '    }\n'
+)
+
+with open(conf_path) as f:
+    lines = f.readlines()
+
+target = None
+for i, line in enumerate(lines):
+    if 'root /var/www/html' in line:
+        target = i
+        break
+
+if target is not None:
+    for i in range(target, len(lines)):
+        if lines[i].strip() == '}':
+            lines.insert(i, php_block)
+            break
+
+with open(conf_path, 'w') as f:
+    f.writelines(lines)
+PYEOF
+
+    ok "PHP-блок добавлен внутрь server-блока в ${NGINX_CONF}"
 
     # Перезагружаем через docker compose
     if [ -d "/opt/remnawave" ]; then
