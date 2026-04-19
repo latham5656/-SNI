@@ -96,6 +96,72 @@ echo ""
 # ── Шаг 5: чистим temp ─────────────────────────
 rm -rf "$TMP"
 
+# ── Шаг 6: php-fpm ─────────────────────────────
+info "Проверяем PHP-FPM..."
+if ! command -v php-fpm* &>/dev/null && ! systemctl list-units --type=service 2>/dev/null | grep -q php; then
+  (apt-get install -y -q php-fpm &>/dev/null) &
+  spinner $! "Установка php-fpm"
+  ok "PHP-FPM установлен"
+else
+  PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)
+  ok "PHP-FPM уже установлен: php${PHP_VER}"
+fi
+echo ""
+
+# ── Шаг 7: nginx.conf ──────────────────────────
+info "Настраиваем nginx для PHP..."
+
+# Ищем nginx.conf в известных путях
+NGINX_CONF=""
+for DIR in /opt/remnanode /opt/remnawave; do
+  if [ -f "$DIR/nginx.conf" ]; then
+    NGINX_CONF="$DIR/nginx.conf"
+    break
+  fi
+done
+
+PHP_BLOCK='
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/run/php/php-fpm.sock;
+    }'
+
+if [ -z "$NGINX_CONF" ]; then
+  warn "nginx.conf не найден в /opt/remnanode/ и /opt/remnawave/"
+else
+  # Проверяем — уже добавлен ли блок
+  if grep -q "fastcgi_pass" "$NGINX_CONF"; then
+    ok "PHP уже настроен в ${NGINX_CONF}"
+  else
+    # Вставляем перед последней закрывающей скобкой первого server-блока с root /var/www/html
+    # Добавляем в конец файла как отдельный фрагмент
+    printf '%s\n' "$PHP_BLOCK" >> "$NGINX_CONF"
+    ok "PHP-блок добавлен в ${NGINX_CONF}"
+
+    # Определяем сокет php-fpm (версия может отличаться)
+    PHP_SOCK=$(ls /run/php/php*-fpm.sock 2>/dev/null | head -1)
+    if [ -n "$PHP_SOCK" ] && [ "$PHP_SOCK" != "/run/php/php-fpm.sock" ]; then
+      sed -i "s|unix:/run/php/php-fpm.sock|unix:${PHP_SOCK}|g" "$NGINX_CONF"
+      ok "Сокет: ${PHP_SOCK}"
+    fi
+
+    # Перезагружаем nginx (docker или systemd)
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q nginx; then
+      NGINX_CONTAINER=$(docker ps --format '{{.Names}}' | grep nginx | head -1)
+      docker exec "$NGINX_CONTAINER" nginx -s reload &>/dev/null \
+        && ok "Nginx (docker) перезагружен" \
+        || warn "Не удалось перезагрузить nginx в docker"
+    elif systemctl is-active --quiet nginx 2>/dev/null; then
+      nginx -t &>/dev/null && systemctl reload nginx \
+        && ok "Nginx перезагружен" \
+        || warn "Ошибка конфига nginx — проверь вручную"
+    else
+      warn "Nginx не найден — перезагрузи вручную"
+    fi
+  fi
+fi
+echo ""
 
 # ── Финал ──────────────────────────────────────
 echo -e "${D}  ══════════════════════════════════════════════${NC}"
