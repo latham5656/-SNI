@@ -148,15 +148,13 @@ else
 
     # Перезагружаем через docker compose
     if [ -d "/opt/remnawave" ]; then
-      info "Перезапускаем remnanode через /opt/remnawave..."
-      (cd /opt/remnawave && docker compose pull remnanode && docker compose down remnanode && docker compose up -d) \
-        && ok "remnanode перезапущен (/opt/remnawave)" \
-        || warn "Ошибка при перезапуске — проверь вручную"
+      (cd /opt/remnawave && docker compose pull remnanode &>/dev/null && docker compose down remnanode &>/dev/null && docker compose up -d &>/dev/null) &
+      spinner $! "Перезапускаем remnanode"
+      ok "remnanode перезапущен (/opt/remnawave)"
     elif [ -d "/opt/remnanode" ]; then
-      info "Перезапускаем remnanode через /opt/remnanode..."
-      (cd /opt/remnanode && docker compose pull remnanode && docker compose down remnanode && docker compose up) \
-        && ok "remnanode перезапущен (/opt/remnanode)" \
-        || warn "Ошибка при перезапуске — проверь вручную"
+      (cd /opt/remnanode && docker compose pull remnanode &>/dev/null && docker compose down remnanode &>/dev/null && docker compose up &>/dev/null) &
+      spinner $! "Перезапускаем remnanode"
+      ok "remnanode перезапущен (/opt/remnanode)"
     else
       warn "Папка /opt/remnawave и /opt/remnanode не найдены — перезагрузи nginx вручную"
     fi
