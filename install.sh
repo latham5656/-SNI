@@ -146,18 +146,19 @@ else
       ok "Сокет: ${PHP_SOCK}"
     fi
 
-    # Перезагружаем nginx (docker или systemd)
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q nginx; then
-      NGINX_CONTAINER=$(docker ps --format '{{.Names}}' | grep nginx | head -1)
-      docker exec "$NGINX_CONTAINER" nginx -s reload &>/dev/null \
-        && ok "Nginx (docker) перезагружен" \
-        || warn "Не удалось перезагрузить nginx в docker"
-    elif systemctl is-active --quiet nginx 2>/dev/null; then
-      nginx -t &>/dev/null && systemctl reload nginx \
-        && ok "Nginx перезагружен" \
-        || warn "Ошибка конфига nginx — проверь вручную"
+    # Перезагружаем через docker compose
+    if [ -d "/opt/remnawave" ]; then
+      info "Перезапускаем remnanode через /opt/remnawave..."
+      (cd /opt/remnawave && docker compose pull remnanode && docker compose down remnanode && docker compose up -d) \
+        && ok "remnanode перезапущен (/opt/remnawave)" \
+        || warn "Ошибка при перезапуске — проверь вручную"
+    elif [ -d "/opt/remnanode" ]; then
+      info "Перезапускаем remnanode через /opt/remnanode..."
+      (cd /opt/remnanode && docker compose pull remnanode && docker compose down remnanode && docker compose up) \
+        && ok "remnanode перезапущен (/opt/remnanode)" \
+        || warn "Ошибка при перезапуске — проверь вручную"
     else
-      warn "Nginx не найден — перезагрузи вручную"
+      warn "Папка /opt/remnawave и /opt/remnanode не найдены — перезагрузи nginx вручную"
     fi
   fi
 fi
